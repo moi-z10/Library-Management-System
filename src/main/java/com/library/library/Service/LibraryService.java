@@ -102,6 +102,25 @@ public class LibraryService {
         mm.setPhoneNumber(members.getPhoneNumber());
         return membersRepo.save(mm);
     }
+
+    //FIND ALL BOOKS
+    public List<Books> getAllBooks(){
+        List<Books> b = booksRepo.findAll();
+        List<Books> addBooks = new ArrayList<>();
+        for(Books book:b){
+            Books bb = new Books();
+            bb.setBookId(book.getBookId());
+            bb.setTitle(book.getAuthor());
+            bb.setAuthor(book.getAuthor());
+            bb.setIsbn(book.getIsbn());
+            bb.setPublishingYear(book.getPublishingYear());
+            bb.setQuantity(book.getQuantity());
+            addBooks.add(bb);
+        }
+        return addBooks;
+    }
+
+
     //GET AUTHORS FROM BOOKiD
     public Authors getAuthor(long bookId){
         Books getBook = booksRepo.findById(bookId).get();

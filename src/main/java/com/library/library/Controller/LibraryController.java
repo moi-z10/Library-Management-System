@@ -36,7 +36,12 @@ public class LibraryController {
         return libraryService.createMem(members);
     }
 
-
+    //GET ALL BOOKS
+    @GetMapping("/allBooks")
+    public List<Books> getAllBok(){
+        return libraryService.getAllBooks();
+    }
+    //GET AUTHORS BY BOOK NAME
     @GetMapping("/book/{bookName}")
     public Authors getByBookName(@PathVariable("bookName") String title){
         return libraryService.findByBook(title);
