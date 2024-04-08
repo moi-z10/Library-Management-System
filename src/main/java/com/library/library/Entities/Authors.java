@@ -1,6 +1,7 @@
 package com.library.library.Entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -17,6 +18,6 @@ public class Authors {
     private String authorName;
 
     @OneToMany(mappedBy = "authors")
-    @JsonBackReference
+    @JsonIgnore
     private List<BookAuthors> bookAuthors;
 }

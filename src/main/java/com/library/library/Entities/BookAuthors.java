@@ -1,6 +1,7 @@
 package com.library.library.Entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,13 +16,13 @@ public class BookAuthors {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "bookId")
-    @JsonBackReference
+    @JsonIgnore
 
     private Books books;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "authorId")
-    @JsonBackReference
+    @JsonIgnore
     private Authors authors;
 
 }
