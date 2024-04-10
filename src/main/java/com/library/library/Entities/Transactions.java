@@ -2,15 +2,21 @@ package com.library.library.Entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Data
 public class Transactions {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long transactionId;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    private String transactionId;
     private String transactionType;
     private Date dueDate;
     private Date returnDate;

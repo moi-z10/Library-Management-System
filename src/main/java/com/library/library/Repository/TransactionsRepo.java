@@ -8,8 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface TransactionsRepo extends JpaRepository<Transactions,Long> {
+public interface TransactionsRepo extends JpaRepository<Transactions, String> {
 
 
     Optional<Transactions> findByMembersAndBooks(Members members,Books books);

@@ -2,22 +2,28 @@ package com.library.library.Entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.GenericGenerator;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Data
 public class Authors {
     @Id
-    private long authorId;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    private String authorId;
     private String authorName;
 
-    @OneToMany(mappedBy = "authors")
+    @ManyToMany(mappedBy = "authorsSet")
     @JsonIgnore
-    private List<BookAuthors> bookAuthors;
+    private Set<Books> booksSet = new HashSet<>();
 }

@@ -7,9 +7,7 @@ import com.library.library.Request.CreationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class LibraryService {
@@ -17,8 +15,8 @@ public class LibraryService {
     AuthorsRepo authorsRepo;
     @Autowired
     BooksRepo booksRepo;
-    @Autowired
-    BookAuthorsRepo bookAuthorsRepo;
+//    @Autowired
+//    BookAuthorsRepo bookAuthorsRepo;
     @Autowired
     GenreRepo genreRepo;
     @Autowired
@@ -27,14 +25,12 @@ public class LibraryService {
     PublisherRepo publisherRepo;
 
     public CreationRequest.CreationDto create(CreationRequest.CreationDto creationDto){
-        RandomIds rd = new RandomIds();
         Genre g = new Genre();
         Genre gg;
-        Optional<Genre> op = genreRepo.findBygenreName(creationDto.getGenreName());
+        Optional<Genre> op = genreRepo.findBygenreName(creationDto.getGenre().getGenreName());
         if(op.isEmpty()){
-            long id = rd.getRandom();
-            g.setGenreId(id);
-            g.setGenreName(creationDto.getGenreName());
+            g.setGenreId(UUID.randomUUID().toString());
+            g.setGenreName(creationDto.getGenre().getGenreName());
             gg = genreRepo.save(g);
         }
         else{
@@ -44,11 +40,10 @@ public class LibraryService {
 
         Publisher p = new Publisher();
         Publisher pp;
-        Optional<Publisher> po = publisherRepo.findBypublisherName(creationDto.getPublisherName());
+        Optional<Publisher> po = publisherRepo.findBypublisherName(creationDto.getPublisher().getPublisherName());
         if(po.isEmpty()){
-            long id = rd.getRandom();
-            p.setPublisherId(id);
-            p.setPublisherName(creationDto.getPublisherName());
+            p.setPublisherId(UUID.randomUUID().toString());
+            p.setPublisherName(creationDto.getPublisher().getPublisherName());
             pp = publisherRepo.save(p);
         }
         else{
@@ -56,44 +51,55 @@ public class LibraryService {
         }
 
         Authors a = new Authors();
-        Authors aa;
-        Optional<Authors> ao = authorsRepo.findByauthorName(creationDto.getAuthorName());
-        if(ao.isEmpty()){
-            long id = rd.getRandom();
-            a.setAuthorId(id);
-            a.setAuthorName(creationDto.getAuthorName());
-            aa = authorsRepo.save(a);
-        }
-        else{
+        Authors aa = new Authors();
+        Optional<Authors> ao = authorsRepo.findByauthorName(creationDto.getAuthors().getAuthorName());
+        if(ao.isPresent()){
             aa = ao.get();
         }
 
-
         Books b = new Books();
-        long bookId = rd.getRandom();
-        b.setBookId(bookId);
-        b.setTitle(creationDto.getTitle());
-        b.setAuthor(creationDto.getAuthorName());
-        b.setIsbn(creationDto.getIsbn());
-        b.setPublishingYear(creationDto.getPublicationYear());
-        b.setQuantity(creationDto.getQuantity());
-        b.setGenre(gg);
-        b.setPublisher(pp);
+        Optional<Books> findBook = booksRepo.findBytitle(creationDto.getTitle());
+        if(findBook.isEmpty()) {
+            if(ao.isEmpty()){
+
+                a.setAuthorId(UUID.randomUUID().toString());
+                a.setAuthorName(creationDto.getAuthors().getAuthorName());
+                aa = authorsRepo.save(a);
+            }
+
+            b.setBookId(UUID.randomUUID().toString());
+            b.setTitle(creationDto.getTitle());
+            b.setIsbn(creationDto.getIsbn());
+            b.setPublishingYear(creationDto.getPublicationYear());
+            b.setQuantity(creationDto.getQuantity());
+            b.setGenre(gg);
+            b.setPublisher(pp);
+            b.getAuthorsSet().add(aa);
+        }
+        else if(ao.isEmpty()){
+            b = findBook.get();
+            a.setAuthorId(UUID.randomUUID().toString());
+            a.setAuthorName(creationDto.getAuthors().getAuthorName());
+            aa = authorsRepo.save(a);
+            b.getAuthorsSet().add(aa);
+        }
+
+
         Books bb = booksRepo.save(b);
 
-        BookAuthors ba = new BookAuthors();
-        ba.setBooks(bb);
-        ba.setAuthors(aa);
-        bookAuthorsRepo.save(ba);
+
 
         creationDto.setBookId(bb.getBookId());
-        creationDto.setGenreId(gg.getGenreId());
-        creationDto.setPublisherId(pp.getPublisherId());
-        creationDto.setAuthorId(aa.getAuthorId());
+        creationDto.setGenre(gg);
+        creationDto.setPublisher(pp);
+        creationDto.setAuthors(aa);
 
         return creationDto;
-
     }
+
+
+
+
     public Members createMem(Members members) {
         Members mm = new Members();
         mm.setName(members.getName());
@@ -110,8 +116,7 @@ public class LibraryService {
         for(Books book:b){
             Books bb = new Books();
             bb.setBookId(book.getBookId());
-            bb.setTitle(book.getAuthor());
-            bb.setAuthor(book.getAuthor());
+            bb.setTitle(book.getTitle());
             bb.setIsbn(book.getIsbn());
             bb.setPublishingYear(book.getPublishingYear());
             bb.setQuantity(book.getQuantity());
@@ -122,17 +127,17 @@ public class LibraryService {
 
 
     //GET AUTHORS FROM BOOKiD
-    public Authors getAuthor(long bookId){
-        Books getBook = booksRepo.findById(bookId).get();
-        BookAuthors getAuthor = getBook.getBookAuthors();
-        return getAuthor.getAuthors();
-
-    }
+//    public Set<Authors> getAuthor(UUID bookId){
+//        Books getBook = booksRepo.findById(bookId).get();
+//        Set<Authors> authors = new HashSet<>();
+//        authors.addAll(getBook.getAuthorsSet());
+//        return  authors;
+//    }
     //GET BY GENREEiD
-    public List<Books> getByGenre(long genreId){
-        Genre g = genreRepo.findById(genreId).get();
-        return g.getBooks();
-    }
+//    public List<Books> getByGenre(UUID genreId){
+//        Genre g = genreRepo.findById(genreId).get();
+//        return g.getBooks();
+//    }
 
     //GET BY GENRE NAME
     public List<Books> getByGenreName(String genreName){
@@ -141,10 +146,10 @@ public class LibraryService {
         return gg.getBooks();
     }
 
-    public Authors findByBook(String title){
-        Books book = booksRepo.findBytitle(title);
-        BookAuthors getBook = book.getBookAuthors();
-        return getBook.getAuthors();
+    public Set<Authors> findByBook(String title){
+        Books book = booksRepo.findBytitle(title).get();
+        Set<Authors> authors = book.getAuthorsSet();
+        return authors;
     }
 
     //GET ALL MEMBERS

@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/library")
@@ -41,19 +43,21 @@ public class LibraryController {
     public List<Books> getAllBok(){
         return libraryService.getAllBooks();
     }
+
+
     //GET AUTHORS BY BOOK NAME
     @GetMapping("/book/{bookName}")
-    public Authors getByBookName(@PathVariable("bookName") String title){
+    public Set<Authors> getByBookName(@PathVariable("bookName") String title){
         return libraryService.findByBook(title);
     }
 
-    //GET AUTHOR
-    @GetMapping("/authors")
-    public Authors getAuthor(@RequestParam long bookId){
-        return libraryService.getAuthor(bookId);
-    }
-
-    //GET BY GENRES
+//    GET AUTHOR
+//    @GetMapping("/authors")
+//    public Set<Authors> getAuthor(@RequestParam UUID bookId){
+//        return libraryService.getAuthor(bookId);
+//    }
+//
+//    //GET BY GENRES
 //    @GetMapping("/genre")
 //    public List<Books> getByGenreId(
 //            @RequestParam(value = "genreId", required = false) Long genreId,
@@ -70,10 +74,10 @@ public class LibraryController {
 //        }
 //    }
 
-    @GetMapping("/gen/{genId}")
-    public List<Books> getByGenre(@PathVariable("genId") long genreId){
-        return this.libraryService.getByGenre(genreId);
-    }
+//    @GetMapping("/gen/{genId}")
+//    public List<Books> getByGenre(@PathVariable("genId") UUID genreId){
+//        return this.libraryService.getByGenre(genreId);
+//    }
 
     @GetMapping("/genname/{genname}")
     public List<Books> getByGenreName(@PathVariable("genname") String genreName){

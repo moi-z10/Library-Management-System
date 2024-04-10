@@ -25,8 +25,8 @@ public class TransactionService {
     TransactionsRepo transactionsRepo;
 
     public String borrow(TransactionRequest transactionRequest){
-        long bookId = transactionRequest.getBookId();
-        long memberId = transactionRequest.getMemberId();
+        String bookId = transactionRequest.getBookId();
+        String memberId = transactionRequest.getMemberId();
         String type = transactionRequest.getTransactionType();
 
         Members mmm = new Members();
@@ -35,25 +35,22 @@ public class TransactionService {
         Books bbb = new Books();
         bbb.setBookId(bookId);
 
-        Optional<Transactions> ttt = transactionsRepo.findByMembersAndBooks(mmm, bbb);
-        if(ttt.isPresent()){
-            return "you have taken the same book already";
-        }
-        Calendar calendar = Calendar.getInstance();
+        if(type.equalsIgnoreCase("borrow")) {
+            Optional<Transactions> ttt = transactionsRepo.findByMembersAndBooks(mmm, bbb);
+            if (ttt.isPresent()) {
+                return "you have taken the same book already";
+            }
+            Calendar calendar = Calendar.getInstance();
 
-        // Set the calendar to today's date
-        calendar.setTime(new Date());
+            calendar.setTime(new Date());
 
-        // Add 2 weeks to the current date
-        calendar.add(Calendar.WEEK_OF_YEAR, 2);
+            calendar.add(Calendar.WEEK_OF_YEAR, 2);
 
-        // Get the dueDate as a Date object
-        Date dueDate = calendar.getTime();
+            Date dueDate = calendar.getTime();
 
-        Transactions trans = new Transactions();
-        if(type.equalsIgnoreCase("borrow")){
+            Transactions trans = new Transactions();
             Optional<Books> bookPresent = booksRepo.findById(bookId);
-            if(bookPresent.isPresent()) {
+            if (bookPresent.isPresent()) {
                 Books b = bookPresent.get();
                 int quant = b.getQuantity();
                 if (quant > 0) {
@@ -74,16 +71,15 @@ public class TransactionService {
                 } else {
                     return "BOOK NOT AVAILABLE";
                 }
-            }
-            else {
+            } else {
                 return "BOOK ID NOT PRESENT";
             }
         }
         return "SUCCESSFULL";
     }
     public String returnBook(TransactionRequest transactionRequest){
-        long bookId= transactionRequest.getBookId();
-        long memberId= transactionRequest.getMemberId();
+        String bookId= transactionRequest.getBookId();
+        String memberId= transactionRequest.getMemberId();
         String type = transactionRequest.getTransactionType();
 
         Calendar cal = Calendar.getInstance();

@@ -2,8 +2,9 @@ package com.library.library.Entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 
-import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -13,8 +14,12 @@ import java.util.List;
 @AllArgsConstructor
 public class Members {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long memberId;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    private String memberId;
     private String name;
     private String address;
     private long phoneNumber;
