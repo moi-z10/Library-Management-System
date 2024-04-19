@@ -27,7 +27,7 @@ public class LibraryController {
 
     //TO ADD BOOKS,AUTHORS,PUBLISHERS,GENRE INTO DB
     @PostMapping("/create")
-    public CreationRequest.CreationDto creation(@RequestBody CreationRequest.CreationDto creationDto){
+    public CreationRequest creation(@RequestBody CreationRequest creationDto){
         return libraryService.create(creationDto);
     }
 

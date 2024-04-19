@@ -1,6 +1,5 @@
 package com.library.library.Service;
 
-import com.library.library.Controller.RandomIds;
 import com.library.library.Entities.*;
 import com.library.library.Repository.*;
 import com.library.library.Request.CreationRequest;
@@ -15,8 +14,6 @@ public class LibraryService {
     AuthorsRepo authorsRepo;
     @Autowired
     BooksRepo booksRepo;
-//    @Autowired
-//    BookAuthorsRepo bookAuthorsRepo;
     @Autowired
     GenreRepo genreRepo;
     @Autowired
@@ -24,7 +21,7 @@ public class LibraryService {
     @Autowired
     PublisherRepo publisherRepo;
 
-    public CreationRequest.CreationDto create(CreationRequest.CreationDto creationDto){
+    public CreationRequest create(CreationRequest creationDto){
         Genre g = new Genre();
         Genre gg;
         Optional<Genre> op = genreRepo.findBygenreName(creationDto.getGenre().getGenreName());
@@ -61,7 +58,6 @@ public class LibraryService {
         Optional<Books> findBook = booksRepo.findBytitle(creationDto.getTitle());
         if(findBook.isEmpty()) {
             if(ao.isEmpty()){
-
                 a.setAuthorId(UUID.randomUUID().toString());
                 a.setAuthorName(creationDto.getAuthors().getAuthorName());
                 aa = authorsRepo.save(a);
@@ -89,7 +85,7 @@ public class LibraryService {
 
 
 
-        creationDto.setBookId(bb.getBookId());
+        creationDto.setBookId(b.getBookId());
         creationDto.setGenre(gg);
         creationDto.setPublisher(pp);
         creationDto.setAuthors(aa);
@@ -133,6 +129,9 @@ public class LibraryService {
 //        authors.addAll(getBook.getAuthorsSet());
 //        return  authors;
 //    }
+
+
+
     //GET BY GENREEiD
 //    public List<Books> getByGenre(UUID genreId){
 //        Genre g = genreRepo.findById(genreId).get();

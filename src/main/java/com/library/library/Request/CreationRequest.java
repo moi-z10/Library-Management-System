@@ -6,11 +6,9 @@ import com.library.library.Entities.Publisher;
 import lombok.Data;
 
 import java.util.UUID;
-
+@Data
 public class CreationRequest {
 
-    @Data
-    public static class CreationDto {
         private String bookId;
         private Genre genre;
         private Publisher publisher;
@@ -19,6 +17,5 @@ public class CreationRequest {
         private String isbn;
         private int publicationYear;
         private int quantity;
-
-    }
 }
+
