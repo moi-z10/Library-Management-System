@@ -3,6 +3,7 @@ package com.library.library.Entities;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.UUID;
 
 @Entity
 @Data
+@ToString(exclude = "books")
 public class Genre {
     @Id
     @GeneratedValue(generator = "UUID")

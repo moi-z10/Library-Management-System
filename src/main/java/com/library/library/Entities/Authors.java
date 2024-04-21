@@ -25,6 +25,5 @@ public class Authors {
     private String authorName;
 
     @ManyToMany(mappedBy = "authorsSet")
-    @JsonIgnore
     private Set<Books> booksSet = new HashSet<>();
 }

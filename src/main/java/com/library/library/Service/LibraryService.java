@@ -1,12 +1,17 @@
 package com.library.library.Service;
 
 import com.library.library.Entities.*;
+import com.library.library.Exception.ErrorMessage;
+import com.library.library.Exception.IdNotFoundException;
 import com.library.library.Repository.*;
 import com.library.library.Request.CreationRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import java.util.*;
+
 
 @Service
 public class LibraryService {
@@ -21,13 +26,13 @@ public class LibraryService {
     @Autowired
     PublisherRepo publisherRepo;
 
-    public CreationRequest create(CreationRequest creationDto){
+    public CreationRequest create(CreationRequest creationRequest){
         Genre g = new Genre();
         Genre gg;
-        Optional<Genre> op = genreRepo.findBygenreName(creationDto.getGenre().getGenreName());
+        Optional<Genre> op = genreRepo.findBygenreName(creationRequest.getGenre().getGenreName());
         if(op.isEmpty()){
             g.setGenreId(UUID.randomUUID().toString());
-            g.setGenreName(creationDto.getGenre().getGenreName());
+            g.setGenreName(creationRequest.getGenre().getGenreName());
             gg = genreRepo.save(g);
         }
         else{
@@ -37,10 +42,10 @@ public class LibraryService {
 
         Publisher p = new Publisher();
         Publisher pp;
-        Optional<Publisher> po = publisherRepo.findBypublisherName(creationDto.getPublisher().getPublisherName());
+        Optional<Publisher> po = publisherRepo.findBypublisherName(creationRequest.getPublisher().getPublisherName());
         if(po.isEmpty()){
             p.setPublisherId(UUID.randomUUID().toString());
-            p.setPublisherName(creationDto.getPublisher().getPublisherName());
+            p.setPublisherName(creationRequest.getPublisher().getPublisherName());
             pp = publisherRepo.save(p);
         }
         else{
@@ -49,25 +54,25 @@ public class LibraryService {
 
         Authors a = new Authors();
         Authors aa = new Authors();
-        Optional<Authors> ao = authorsRepo.findByauthorName(creationDto.getAuthors().getAuthorName());
+        Optional<Authors> ao = authorsRepo.findByauthorName(creationRequest.getAuthors().getAuthorName());
         if(ao.isPresent()){
             aa = ao.get();
         }
 
         Books b = new Books();
-        Optional<Books> findBook = booksRepo.findBytitle(creationDto.getTitle());
+        Optional<Books> findBook = booksRepo.findByTitle(creationRequest.getTitle());
         if(findBook.isEmpty()) {
             if(ao.isEmpty()){
                 a.setAuthorId(UUID.randomUUID().toString());
-                a.setAuthorName(creationDto.getAuthors().getAuthorName());
+                a.setAuthorName(creationRequest.getAuthors().getAuthorName());
                 aa = authorsRepo.save(a);
             }
 
             b.setBookId(UUID.randomUUID().toString());
-            b.setTitle(creationDto.getTitle());
-            b.setIsbn(creationDto.getIsbn());
-            b.setPublishingYear(creationDto.getPublicationYear());
-            b.setQuantity(creationDto.getQuantity());
+            b.setTitle(creationRequest.getTitle());
+            b.setIsbn(creationRequest.getIsbn());
+            b.setPublishingYear(creationRequest.getPublicationYear());
+            b.setQuantity(creationRequest.getQuantity());
             b.setGenre(gg);
             b.setPublisher(pp);
             b.getAuthorsSet().add(aa);
@@ -75,97 +80,89 @@ public class LibraryService {
         else if(ao.isEmpty()){
             b = findBook.get();
             a.setAuthorId(UUID.randomUUID().toString());
-            a.setAuthorName(creationDto.getAuthors().getAuthorName());
+            a.setAuthorName(creationRequest.getAuthors().getAuthorName());
             aa = authorsRepo.save(a);
             b.getAuthorsSet().add(aa);
         }
 
-
         Books bb = booksRepo.save(b);
 
+        creationRequest.setBookId(b.getBookId());
+        creationRequest.setGenre(gg);
+        creationRequest.setPublisher(pp);
+        creationRequest.setAuthors(aa);
 
-
-        creationDto.setBookId(b.getBookId());
-        creationDto.setGenre(gg);
-        creationDto.setPublisher(pp);
-        creationDto.setAuthors(aa);
-
-        return creationDto;
+        return creationRequest;
     }
 
 
 
 
-    public Members createMem(Members members) {
+    public ResponseEntity<Object> createMem(Members members) {
         Members mm = new Members();
         mm.setName(members.getName());
         mm.setEmail(members.getEmail());
         mm.setAddress(members.getAddress());
         mm.setPhoneNumber(members.getPhoneNumber());
-        return membersRepo.save(mm);
+
+        Members savedMember = membersRepo.save(mm);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedMember);
     }
 
     //FIND ALL BOOKS
-    public List<Books> getAllBooks(){
-        List<Books> b = booksRepo.findAll();
-        List<Books> addBooks = new ArrayList<>();
-        for(Books book:b){
-            Books bb = new Books();
-            bb.setBookId(book.getBookId());
-            bb.setTitle(book.getTitle());
-            bb.setIsbn(book.getIsbn());
-            bb.setPublishingYear(book.getPublishingYear());
-            bb.setQuantity(book.getQuantity());
-            addBooks.add(bb);
+    public ResponseEntity<Object> getAllBooks(){
+        List<Books> books = booksRepo.findAll();
+        if(!books.isEmpty()){
+            return ResponseEntity.ok(books);
         }
-        return addBooks;
+        else{
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(
+                    new ErrorMessage("No books in library", "LCT400"));
+        }
     }
-
-
-    //GET AUTHORS FROM BOOKiD
-//    public Set<Authors> getAuthor(UUID bookId){
-//        Books getBook = booksRepo.findById(bookId).get();
-//        Set<Authors> authors = new HashSet<>();
-//        authors.addAll(getBook.getAuthorsSet());
-//        return  authors;
-//    }
-
 
 
     //GET BY GENREEiD
-//    public List<Books> getByGenre(UUID genreId){
-//        Genre g = genreRepo.findById(genreId).get();
-//        return g.getBooks();
-//    }
+    public ResponseEntity<Object> getByGenre(String genreId) throws IdNotFoundException {
+        try {
+            Genre g = genreRepo.findById(genreId).orElseThrow(() -> new IdNotFoundException("Nah", "Id win"));
+            List<Books> books = g.getBooks();
+            return ResponseEntity.ok(books);
+        }catch(IdNotFoundException e){
+            String errorMsg = "Id Not found";
+            String reasonCode = "LCT400";
+            ErrorMessage er = new ErrorMessage();
+            er.setErrorMsg(errorMsg);
+            er.setReasonCode(reasonCode);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(er);
+        }
+    }
 
     //GET BY GENRE NAME
-    public List<Books> getByGenreName(String genreName){
+    public ResponseEntity<Object> getByGenreName(String genreName){
         Optional<Genre> g = genreRepo.findBygenreName(genreName);
-        Genre gg = g.get();
-        return gg.getBooks();
+        if(g.isPresent()) {
+            Genre gg = g.get();
+            List<Books> books = gg.getBooks();
+            return ResponseEntity.ok(books);
+        }
+        else{
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorMessage
+                    ("No books with provided genre","LCT400"));
+        }
     }
 
-    public Set<Authors> findByBook(String title){
-        Books book = booksRepo.findBytitle(title).get();
-        Set<Authors> authors = book.getAuthorsSet();
-        return authors;
-    }
+
 
     //GET ALL MEMBERS
-    public List<Members> getAllMem(){
-        List<Members> l1 = new ArrayList<>();
+    public ResponseEntity<Object> getAllMem() {
         List<Members> m = membersRepo.findAll();
-        for(Members mm :m){
-            Members add = new Members();
-            add.setMemberId(mm.getMemberId());
-            add.setName(mm.getName());
-            add.setEmail(mm.getEmail());
-            add.setPhoneNumber(mm.getPhoneNumber());
-            add.setAddress(mm.getAddress());
-            l1.add(add);
+        if (!m.isEmpty()) {
+            return ResponseEntity.ok(m);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorMessage
+                    ("No members present","LCT400"));
         }
-        return l1;
     }
-
-
 }

@@ -18,4 +18,3 @@ public class CreationRequest {
         private int publicationYear;
         private int quantity;
 }
-

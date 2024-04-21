@@ -1,18 +1,20 @@
 package com.library.library.Service;
 
 import com.library.library.Entities.*;
+import com.library.library.Exception.IdNotFoundException;
 import com.library.library.Repository.*;
 import com.library.library.Request.CreationRequest;
+import com.sun.source.tree.LambdaExpressionTree;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -80,11 +82,11 @@ class LibraryServiceTest {
 
 
         CreationRequest creationRequest = new CreationRequest();
-        creationRequest.setIsbn("236-281-23");
-        creationRequest.setBookId("12");
-        creationRequest.setTitle("Hello World");
-        creationRequest.setPublicationYear(2001);
-        creationRequest.setQuantity(7);
+        creationRequest.setIsbn(books.getIsbn());
+        creationRequest.setBookId(books.getBookId());
+        creationRequest.setTitle(books.getTitle());
+        creationRequest.setPublicationYear(books.getPublishingYear());
+        creationRequest.setQuantity(books.getQuantity());
         creationRequest.setGenre(genre);
         creationRequest.setAuthors(authors);
         creationRequest.setPublisher(publisher);
@@ -102,26 +104,93 @@ class LibraryServiceTest {
 
         when(membersRepo.save(any(Members.class))).thenReturn(members);
 
-        Members members1 = libraryService.createMem(members);
+        ResponseEntity<Object> members1 = libraryService.createMem(members);
 
-        assertEquals(members,members1);
+        assertEquals(HttpStatus.CREATED,members1.getStatusCode());
 
     }
 
     @Test
     void getAllBooks() {
+        Books books = new Books();
+        books.setBookId("1");
+        books.setTitle("Farm");
+        books.setIsbn("233-3215-5");
+        books.setQuantity(5);
 
+        List<Books> booksList = new ArrayList<>();
+        booksList.add(books);
+
+        when(booksRepo.findAll()).thenReturn(booksList);
+
+        ResponseEntity<Object> response1 = libraryService.getAllBooks();
+        assertEquals(HttpStatus.OK,response1.getStatusCode());
+
+    }
+
+    @Test
+    void testGetByGenreId() throws IdNotFoundException {
+        Genre genre = Mockito.mock(Genre.class);
+        genre.setGenreId("1");
+        genre.setGenreName("fiction");
+
+        Books books = new Books();
+        books.setGenre(genre);
+        books.setTitle("hello");
+        books.setPublishingYear(3002);
+        List<Books> booksList = new ArrayList<>();
+
+        when(genreRepo.findById(genre.getGenreId())).thenReturn(Optional.of(genre));
+        when(genre.getBooks()).thenReturn(booksList);
+
+        ResponseEntity<Object> response = libraryService.getByGenre(genre.getGenreId());
+        assertEquals(HttpStatus.OK,response.getStatusCode());
+        assertEquals(booksList,response.getBody());
     }
 
     @Test
     void getByGenreName() {
-    }
+        Genre genre = Mockito.mock(Genre.class);
+        genre.setGenreName("Fiction");
+        genre.setGenreId("2L");
 
-    @Test
-    void findByBook() {
+        Books books = new Books();
+        books.setBookId("1");
+        books.setIsbn("878-34-2123");
+        books.setQuantity(4);
+        books.setTitle("HELLOWORLD");
+        books.setGenre(genre);
+        List<Books> booksList = new ArrayList<>();
+        booksList.add(books);
+
+        when(genreRepo.findBygenreName(genre.getGenreName())).thenReturn(Optional.of(genre));
+        when(genre.getBooks()).thenReturn(booksList);
+
+        ResponseEntity<Object> response = libraryService.getByGenreName(genre.getGenreName());
+        assertEquals(HttpStatus.OK,response.getStatusCode());
+        List<Books> list = (List<Books>) response.getBody();
+        assertNotNull(list);
+        Books books1 = list.get(0);
+        assertEquals(books.getBookId(),books1.getBookId());
     }
 
     @Test
     void getAllMem() {
+        List<Members> membersList = new ArrayList<>();
+        Members members = new Members();
+        members.setName("Moiz");
+        members.setPhoneNumber(345678);
+        members.setAddress("HYD");
+        members.setEmail("moiz@10");
+
+        membersList.add(members);
+
+        when(membersRepo.findAll()).thenReturn(membersList);
+        ResponseEntity<Object> response = libraryService.getAllMem();
+        assertEquals(HttpStatus.OK,response.getStatusCode());
+
+        List<Members> members1 = (List<Members>) response.getBody();
+        assert members1 != null;
+        assertEquals(membersList.get(0).getMemberId(),members1.get(0).getMemberId());
     }
 }

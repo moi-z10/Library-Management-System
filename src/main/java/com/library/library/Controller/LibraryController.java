@@ -1,20 +1,19 @@
 package com.library.library.Controller;
 
 import com.library.library.DTO.TransactionsDTO;
-import com.library.library.Entities.Authors;
 import com.library.library.Entities.Books;
 import com.library.library.Entities.Members;
-import com.library.library.Entities.Transactions;
+import com.library.library.Exception.IdNotFoundException;
 import com.library.library.Request.TransactionRequest;
 import com.library.library.Service.LibraryService;
 import com.library.library.Request.CreationRequest;
 import com.library.library.Service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/library")
@@ -34,65 +33,39 @@ public class LibraryController {
 
     //TO ADD MEMBERS INTO DB
     @PostMapping("/members")
-    public Members createMembers(@RequestBody Members members){
+    public ResponseEntity<Object> createMembers(@RequestBody Members members){
         return libraryService.createMem(members);
     }
 
     //GET ALL BOOKS
-    @GetMapping("/allBooks")
-    public List<Books> getAllBok(){
+    @GetMapping("/getbooks")
+    public ResponseEntity<Object> getAllBok(){
         return libraryService.getAllBooks();
     }
 
 
-    //GET AUTHORS BY BOOK NAME
-    @GetMapping("/book/{bookName}")
-    public Set<Authors> getByBookName(@PathVariable("bookName") String title){
-        return libraryService.findByBook(title);
+
+    @GetMapping("/gen/{genId}")
+    public ResponseEntity<Object> getByGenre(@PathVariable("genId") String genreId) throws IdNotFoundException {
+        return this.libraryService.getByGenre(genreId);
     }
-
-//    GET AUTHOR
-//    @GetMapping("/authors")
-//    public Set<Authors> getAuthor(@RequestParam UUID bookId){
-//        return libraryService.getAuthor(bookId);
-//    }
-//
-//    //GET BY GENRES
-//    @GetMapping("/genre")
-//    public List<Books> getByGenreId(
-//            @RequestParam(value = "genreId", required = false) Long genreId,
-//            @RequestParam(value = "GenreName", required = false) String genreName
-//    ){
-//        if(genreId != null) {
-//            return this.libraryService.getByGenre(genreId);
-//        }
-//        else if(genreName!=null){
-//            return libraryService.getByGenreName(genreName);
-//        }
-//        else{
-//            return null;
-//        }
-//    }
-
-//    @GetMapping("/gen/{genId}")
-//    public List<Books> getByGenre(@PathVariable("genId") UUID genreId){
-//        return this.libraryService.getByGenre(genreId);
-//    }
 
     @GetMapping("/genname/{genname}")
-    public List<Books> getByGenreName(@PathVariable("genname") String genreName){
+    public ResponseEntity<Object> getByGenreName(@PathVariable("genname") String genreName){
         return libraryService.getByGenreName(genreName);
     }
+
+
     //TO GET ALL THE MEMBERS
     @GetMapping("/getmem")
-    public List<Members> getAllMembers(){
+    public ResponseEntity<Object> getAllMembers(){
         return libraryService.getAllMem();
     }
 
 
     //TO ADD TRANSACTIONS INTO DB
     @PostMapping("/transaction")
-    public String borrowBook(@RequestBody TransactionRequest transactionRequest){
+    public ResponseEntity<Object> borrowBook(@RequestBody TransactionRequest transactionRequest) throws IdNotFoundException {
         String type = transactionRequest.getTransactionType();
         if(type.equalsIgnoreCase("borrow")) {
             return transactionService.borrow(transactionRequest);
@@ -101,36 +74,17 @@ public class LibraryController {
             return transactionService.returnBook(transactionRequest);
         }
         else{
-            return "invalid type";
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No method found for given type");
         }
     }
 
 
-//    @GetMapping("/all")
-//    public List<TransactionsDTO> getAll(){
-//        return transactionService.getAllTransactions();
-//    }
-//
-//    @GetMapping("/books/{bookId}")
-//    public List<TransactionsDTO> getByBook(@PathVariable("bookId") Books books){
-//        return transactionService.getByBookId(books);
-//    }
-//
-//    @GetMapping("/members/{memberId}")
-//    public List<TransactionsDTO> getByMember(@PathVariable("memberId") Members members){
-//        return transactionService.getByMemberId(members);
-//    }
-//
-//    @GetMapping("/membook/{memid}/{bookid}")
-//    public  List<TransactionsDTO> getByMemBook(@PathVariable("memid") Members members, @PathVariable("bookid") Books books){
-//        return transactionService.getByMemberAndBooks(members,books);
-//    }
 
     // TO GET ALL TRANSACTIONS
     @GetMapping("/memberbooks")
-    public List<TransactionsDTO> getTransactions(
-            @RequestParam(required = false) Members members,
-            @RequestParam(required = false) Books books
+    public ResponseEntity<Object> getTransactions(
+            @RequestParam(required = false) String members,
+            @RequestParam(required = false) String books
     ){
         if(members!=null && books!=null){
             return transactionService.getByMemberAndBooks(members,books);

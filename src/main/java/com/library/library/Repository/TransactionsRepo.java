@@ -14,7 +14,7 @@ public interface TransactionsRepo extends JpaRepository<Transactions, String> {
 
 
     Optional<Transactions> findByMembersAndBooks(Members members,Books books);
-    List<Transactions> findByBooks(Books book);
-    List<Transactions> findByMembers(Members members);
-    List<Transactions> findListByMembersAndBooks(Members members,Books books);
+    List<Transactions> findByBooksBookId(String book);
+    List<Transactions> findByMembersMemberId(String members);
+    List<Transactions> findByMembers_MemberIdAndBooks_BookId(String members,String books);
 }
